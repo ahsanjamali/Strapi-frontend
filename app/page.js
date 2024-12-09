@@ -8,31 +8,17 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || "";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Debug log
-        console.log("Starting fetch with API_URL:", API_URL);
-
-        // Test API connection
-        const testResponse = await fetch(`${API_URL}/api/features`);
-        console.log("Test Response:", testResponse.status);
-
-        if (!testResponse.ok) {
-          throw new Error(
-            `API test failed with status: ${testResponse.status}`
-          );
-        }
+        console.log("Using API URL:", API_URL);
 
         const [featuresResponse, whyChooseUsResponse] = await Promise.all([
           fetch(`${API_URL}/api/features?populate=*`),
           fetch(`${API_URL}/api/why-choose-us`),
         ]);
-
-        console.log("Features Response:", featuresResponse.status);
-        console.log("Why Choose Us Response:", whyChooseUsResponse.status);
 
         const featuresData = await featuresResponse.json();
         const whyChooseUsData = await whyChooseUsResponse.json();
@@ -49,32 +35,29 @@ export default function Home() {
           setWhyChooseUs(whyChooseUsData.data);
         }
       } catch (error) {
-        console.error("Fetch Error:", error);
+        console.error("Error:", error);
         setError(error.message);
       } finally {
-        setLoading(true);
+        setLoading(false);
       }
     };
 
     fetchData();
   }, [API_URL]);
 
-  // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen p-8 flex flex-col items-center justify-center">
-        <p>Loading... API_URL: {API_URL}</p>
-        {error && <p className="text-red-500">Error: {error}</p>}
+      <div className="min-h-screen p-8">
+        <p>Loading...</p>
+        <p>API URL: {API_URL}</p>
       </div>
     );
   }
 
-  // Show error state
   if (error) {
     return (
-      <div className="min-h-screen p-8 flex flex-col items-center justify-center text-red-500">
-        <h1>Error</h1>
-        <p>{error}</p>
+      <div className="min-h-screen p-8 text-red-500">
+        <p>Error: {error}</p>
         <p>API URL: {API_URL}</p>
       </div>
     );
