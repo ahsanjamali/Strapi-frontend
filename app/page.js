@@ -6,12 +6,15 @@ export default function Home() {
   const [activeFeature, setActiveFeature] = useState(null);
   const [whyChooseUs, setWhyChooseUs] = useState(null);
 
+  // Get the API URL from environment variable
+  const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [featuresResponse, whyChooseUsResponse] = await Promise.all([
-          fetch("http://localhost:1337/api/features?populate=*"),
-          fetch("http://localhost:1337/api/why-choose-us"),
+          fetch(`${API_URL}/api/features?populate=*`),
+          fetch(`${API_URL}/api/why-choose-us`),
         ]);
 
         const featuresData = await featuresResponse.json();
@@ -31,7 +34,7 @@ export default function Home() {
     };
 
     fetchData();
-  }, []);
+  }, [API_URL]);
 
   return (
     <main className="min-h-screen p-8 bg-white text-black">
@@ -56,7 +59,7 @@ export default function Home() {
                 </div>
                 <div className="absolute right-0 w-[400px] h-[400px] rounded-full overflow-hidden">
                   <img
-                    src={`http://localhost:1337${activeFeature.Aimage.url}`}
+                    src={`${API_URL}${activeFeature.Aimage.url}`}
                     alt={activeFeature.title}
                     className="w-full h-full object-cover"
                   />
