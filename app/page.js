@@ -5,20 +5,40 @@ export default function Home() {
   const [features, setFeatures] = useState([]);
   const [activeFeature, setActiveFeature] = useState(null);
   const [whyChooseUs, setWhyChooseUs] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Get the API URL from environment variable
   const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Debug log
+        console.log("Starting fetch with API_URL:", API_URL);
+
+        // Test API connection
+        const testResponse = await fetch(`${API_URL}/api/features`);
+        console.log("Test Response:", testResponse.status);
+
+        if (!testResponse.ok) {
+          throw new Error(
+            `API test failed with status: ${testResponse.status}`
+          );
+        }
+
         const [featuresResponse, whyChooseUsResponse] = await Promise.all([
           fetch(`${API_URL}/api/features?populate=*`),
           fetch(`${API_URL}/api/why-choose-us`),
         ]);
 
+        console.log("Features Response:", featuresResponse.status);
+        console.log("Why Choose Us Response:", whyChooseUsResponse.status);
+
         const featuresData = await featuresResponse.json();
         const whyChooseUsData = await whyChooseUsResponse.json();
+
+        console.log("Features Data:", featuresData);
+        console.log("Why Choose Us Data:", whyChooseUsData);
 
         if (featuresData.data && featuresData.data.length > 0) {
           setFeatures(featuresData.data);
@@ -29,12 +49,36 @@ export default function Home() {
           setWhyChooseUs(whyChooseUsData.data);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Fetch Error:", error);
+        setError(error.message);
+      } finally {
+        setLoading(true);
       }
     };
 
     fetchData();
   }, [API_URL]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen p-8 flex flex-col items-center justify-center">
+        <p>Loading... API_URL: {API_URL}</p>
+        {error && <p className="text-red-500">Error: {error}</p>}
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen p-8 flex flex-col items-center justify-center text-red-500">
+        <h1>Error</h1>
+        <p>{error}</p>
+        <p>API URL: {API_URL}</p>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen p-8 bg-white text-black">
